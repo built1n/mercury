@@ -15,7 +15,7 @@ struct gdt_ptr {
 	uint32_t base;
 } __attribute__((packed));
 
-struct gdt_entry gdt[6];
+struct gdt_entry gdt[3];
 struct gdt_ptr gp;
 
 /* From assembly */
@@ -40,6 +40,6 @@ void load_gdt() {
 	/* Code segment */
 	gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF);
 	/* Data segment */
-	gdt_set_gate(1, 0, 0xFFFFFFFF, 0x92, 0xCF);
+	gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF);
 	gdt_flush();
 }
