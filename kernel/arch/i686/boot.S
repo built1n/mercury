@@ -27,17 +27,17 @@ _start:
 
 .global gdt_flush
 .type gdt_flush, @function
-.extern gdt_ptr
+.extern gp
 gdt_flush:
     lgdt gp
-    jmp $0x08, $.Lflush
-.Lflush:
     mov %ax, 0x10
     mov %ds, %ax
     mov %es, %ax
     mov %fs, %ax
     mov %gs, %ax
     mov %ss, %ax
+    jmp $0x08, $.Lflush
+.Lflush:
     ret
 
 .size _start, . - _start
