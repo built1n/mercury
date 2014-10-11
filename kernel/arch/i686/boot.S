@@ -19,14 +19,25 @@ stack_top:
 .global _start
 .type _start, @function
 _start:
-	movl $stack_top, %esp
-
-	call kernel_main
-
-    # Hang
-	cli
-	hlt
+    movl $stack_top, %esp
+    cli
+    call kernel_main
 .Lhang:
-	jmp .Lhang
+    jmp .Lhang
+
+.global gdt_flush
+.type gdt_flush, @function
+.extern gdt_ptr
+gdt_flush:
+    lgdt gp
+    jmp $0x08, $.Lflush
+.Lflush:
+    mov %ax, 0x10
+    mov %ds, %ax
+    mov %es, %ax
+    mov %fs, %ax
+    mov %gs, %ax
+    mov %ss, %ax
+    ret
 
 .size _start, . - _start
