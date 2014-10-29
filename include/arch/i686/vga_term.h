@@ -1,9 +1,7 @@
-#ifndef _VGA_H
-#define _VGA_H
-
+#ifndef i686_VGA_TERM_H
+#define i686_VGA_TERM_H
 #include <stddef.h>
 #include <stdint.h>
-#include <text.h>
 
 static const size_t VGA_WIDTH = 80;
 static const size_t VGA_HEIGHT = 25;
@@ -27,6 +25,6 @@ enum vga_color {
 	COLOR_WHITE = 15,
 };
 
-struct text_hook terminal_initialize();
+void initialize_vga_terminal();
 
 #endif

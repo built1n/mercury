@@ -8,6 +8,7 @@ CFLAGS:=-c -ffreestanding -std=gnu99 -O2 -Wall -Wextra -Werror
 
 KERNEL_OBJS = $(patsubst %.c,%.o,$(wildcard kernel/*.c))
 KERNEL_OBJS += $(patsubst %.c,%.o,$(wildcard kernel/*/*.c))
+KERNEL_OBJS += $(patsubst %.c,%.o,$(wildcard kernel/arch/$(ARCH)/*.c))
 HEADERS = $(patsubst %.c,%.o,$(wildcard include/*.c))
 HEADERS += $(patsubst %.c,%.o,$(wildcard include/*/*.c))
 

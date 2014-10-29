@@ -1,9 +1,9 @@
-#include <stdint.h>
 #include "strings.h"
 
-size_t strlen(const char* str) {
+size_t strlen(const char *a) {
 	size_t len = 0;
-	while (str[len])
-		++len;
+	while (*a++) {
+		len++;
+	}
 	return len;
 }
