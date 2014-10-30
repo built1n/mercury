@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
-#include "output.h"
 #include "string.h"
 #include "util/ansi_escape.h"
 

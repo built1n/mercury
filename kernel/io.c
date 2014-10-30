@@ -1,5 +1,5 @@
 #include "arch/terminal.h"
-#include "output.h"
+#include "io.h"
 
 void print_char(char c) {
 	kernel_print_character(c);

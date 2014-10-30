@@ -1,5 +1,5 @@
 #include "main.h"
-#include "output.h"
+#include "io.h"
 #include "util/log.h"
 #include "arch/i686/gdt.h"
 #include "arch/i686/vga_term.h"
