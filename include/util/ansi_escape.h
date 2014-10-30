@@ -13,6 +13,8 @@ enum {
 struct ansi_hooks {
     void (*reset)();
     void (*erase_display)(uint8_t);
+    void (*bold)();
+    void (*light)();
     void (*set_foreground_ansi)(uint8_t);
     void (*set_background_ansi)(uint8_t);
     void (*set_foreground_rgb)(uint8_t, uint8_t, uint8_t);

@@ -1,10 +1,11 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "arch/terminal.h"
-#include "output.h"
+#include "util/log.h"
 
 void kernel_main() {
-	print_string("Hello, "
+	kernel_log(L_INFO, "kernel",
+		"Hello, "
 		"\x1B[31m" "w"
 		"\x1B[32m" "o"
 		"\x1B[33m" "r"

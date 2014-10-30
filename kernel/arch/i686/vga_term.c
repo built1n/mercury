@@ -11,11 +11,16 @@ size_t text_column;
 uint8_t text_color;
 uint16_t* vga_buffer;
 struct ansi_state ansi;
+uint8_t light_modifier;
 
 const uint8_t ansi_to_vga[] = {
 	COLOR_BLACK, COLOR_RED, COLOR_GREEN,
 	COLOR_BROWN /* (yellow) */, COLOR_BLUE,
-	COLOR_MAGENTA, COLOR_CYAN, COLOR_WHITE
+	COLOR_MAGENTA, COLOR_CYAN, COLOR_WHITE,
+	/* light colors */
+	COLOR_DARK_GREY, COLOR_LIGHT_RED, COLOR_LIGHT_GREEN,
+	COLOR_LIGHT_BROWN /* (yellow) */, COLOR_LIGHT_BLUE,
+	COLOR_LIGHT_MAGENTA, COLOR_LIGHT_CYAN, COLOR_LIGHT_GREY,
 };
 
 uint8_t make_color(uint8_t foreground, uint8_t background) {
@@ -33,15 +38,28 @@ void terminal_putcharat(char c, uint8_t color, size_t x, size_t y) {
 	vga_buffer[index] = make_vgaentry(c, color);
 }
 
-void set_foreground_ansi(uint8_t foreground) {
+void ansi_reset() {
+	light_modifier = 0;
+	text_color = make_color(DEFAULT_FG, DEFAULT_BG);
+}
+
+void ansi_bold() {
+	light_modifier = 8;
+}
+
+void ansi_light() {
+	light_modifier = 0;
+}
+
+void ansi_set_foreground_ansi(uint8_t foreground) {
 	/* TODO: Some extra checks on this */
-	foreground = ansi_to_vga[foreground];
+	foreground = ansi_to_vga[foreground + light_modifier];
 	text_color = make_color(foreground, text_color >> 4);
 }
 
-void set_background_ansi(uint8_t background) {
+void ansi_set_background_ansi(uint8_t background) {
 	/* TODO: Some extra checks on this */
-	background = ansi_to_vga[background];
+	background = ansi_to_vga[background + light_modifier];
 	text_color = make_color(text_color & 0xF, background << 4);
 }
 
@@ -86,10 +104,14 @@ void initialize_vga_terminal() {
 	};
 	set_kernel_terminal(term);
 	ansi_init(&ansi);
-	ansi.hooks.set_foreground_ansi = set_foreground_ansi;
+	ansi.hooks.set_foreground_ansi = ansi_set_foreground_ansi;
+	ansi.hooks.set_background_ansi = ansi_set_background_ansi;
+	ansi.hooks.reset = ansi_reset;
+	ansi.hooks.bold = ansi_bold;
+	ansi.hooks.light = ansi_light;
 	vga_buffer = (uint16_t*)0xB8000;
 	text_row = text_column = 0;
-	text_color = make_color(DEFAULT_FG, DEFAULT_BG);
+	ansi_reset();
 	for (size_t y = 0; y < VGA_HEIGHT; y++) {
 		for (size_t x = 0; x < VGA_WIDTH; x++) {
 			const size_t index = y * VGA_WIDTH + x;
