@@ -28,4 +28,4 @@ clean:
 	rm mercury-kernel
 
 qemu: mercury-kernel
-	qemu-system-i386 -sdl -kernel mercury-kernel
+	qemu-system-i386 -sdl -kernel mercury-kernel -append "-system qemu"

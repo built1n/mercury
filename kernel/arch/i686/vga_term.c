@@ -7,6 +7,8 @@ size_t text_row;
 size_t text_column;
 uint8_t text_color;
 uint16_t* vga_buffer;
+char escape_buffer[8];
+size_t escape_index = 0;
 
 uint8_t make_color(uint8_t foreground, uint8_t background) {
 	return foreground | background << 4;
@@ -23,9 +25,40 @@ void terminal_putcharat(char c, uint8_t color, size_t x, size_t y) {
 	vga_buffer[index] = make_vgaentry(c, color);
 }
 
+void print_control(char c) {
+	switch (c) {
+		case 0x1B /* ESC */:
+			/* TODO: Escape codes */
+			break;
+		case '\n':
+			text_column = 0;
+			text_row++;
+			if (text_row >= VGA_HEIGHT) {
+				/* TODO: Scroll */
+			}
+			break;
+		case '\r':
+			text_column = 0;
+			break;
+		case '\t':
+			text_column += 8;
+			if (text_column >= VGA_WIDTH) {
+				print_control('\n');
+			}
+			break;
+	}
+}
+
 void print_character(char c) {
-	terminal_putcharat(c, text_color, text_column, text_row);
-	text_column++;
+	if (c < ' ') {
+		print_control(c);
+	} else {
+		terminal_putcharat(c, text_color, text_column, text_row);
+		text_column++;
+		if (text_column >= VGA_WIDTH) {
+			print_control('\n');
+		}
+	}
 }
 
 void initialize_vga_terminal() {

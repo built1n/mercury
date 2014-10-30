@@ -20,6 +20,8 @@ stack_top:
 .type _start, @function
 _start:
     movl $stack_top, %esp
+    push %eax # Multiboot magic
+    push %ebx # Multiboot pointer
     cli
     call i686_main
 .Lhang:
