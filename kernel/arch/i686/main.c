@@ -7,7 +7,6 @@
 
 void i686_main(struct multiboot *multiboot, uint32_t multiboot_magic) {
 	initialize_vga_terminal();
-	/* TODO: Logging subsystem */
 	kernel_log(L_INFO, "i686", "Booting Mercury kernel for i686");
 	if (multiboot_magic != 0x2BADB002) {
 		kernel_log(L_WARN, "i686", "Not booted from multiboot, what's going on?");
