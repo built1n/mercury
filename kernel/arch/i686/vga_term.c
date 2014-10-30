@@ -52,15 +52,34 @@ void ansi_light() {
 }
 
 void ansi_set_foreground_ansi(uint8_t foreground) {
-	/* TODO: Some extra checks on this */
+	if (foreground > sizeof(ansi_to_vga)) {
+		return;
+	}
 	foreground = ansi_to_vga[foreground + light_modifier];
 	text_color = make_color(foreground, text_color >> 4);
 }
 
 void ansi_set_background_ansi(uint8_t background) {
-	/* TODO: Some extra checks on this */
+	if (background > sizeof(ansi_to_vga)) {
+		return;
+	}
 	background = ansi_to_vga[background + light_modifier];
 	text_color = make_color(text_color & 0xF, background << 4);
+}
+
+void scroll_one() {
+	size_t x, y;
+	for (y = 1; y < VGA_HEIGHT; ++y) {
+		for (x = 0; x < VGA_WIDTH; ++x) {
+			vga_buffer[((y - 1) * VGA_WIDTH) + x] =
+				vga_buffer[(y * VGA_WIDTH) + x];
+		}
+	}
+	/* Clear lower row */
+	for (x = 0; x < VGA_WIDTH; ++x) {
+		vga_buffer[((VGA_HEIGHT - 1) * VGA_WIDTH) + x] =
+			make_vgaentry(' ', text_color);
+	}
 }
 
 void print_control(char c) {
@@ -69,7 +88,8 @@ void print_control(char c) {
 			text_column = 0;
 			text_row++;
 			if (text_row >= VGA_HEIGHT) {
-				/* TODO: Scroll */
+				scroll_one();
+				text_row--;
 			}
 			break;
 		case '\r':

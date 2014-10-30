@@ -4,7 +4,7 @@ AS:=i686-elf-as
 BINDIR:=./bin/
 ARCH:=i686
 INCLUDE:=./include/
-CFLAGS:=-c -ffreestanding -std=gnu99 -O2 -Wall -Wextra -Werror
+CFLAGS:=-c -ffreestanding -std=gnu99 -O2 -Wall -Wextra -Werror -Wno-unused-parameter
 
 KERNEL_OBJS = $(patsubst %.c,%.o,$(wildcard kernel/*.c))
 KERNEL_OBJS += $(patsubst %.c,%.o,$(wildcard kernel/*/*.c))
