@@ -28,5 +28,4 @@ void i686_main(struct multiboot *multiboot, uint32_t multiboot_magic) {
 	load_gdt();
 	kernel_log(L_INFO, "i686", "i686 is good to go, handing control off to kernel.");
 	kernel_main();
-	(void)(multiboot); /* Squash this, we aren't handling multiboot yet */
 }
