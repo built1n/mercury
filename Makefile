@@ -7,12 +7,14 @@ ARCH:=i686
 INCLUDE:=./include/
 CFLAGS:=-c -ffreestanding -std=gnu99 -O2 -Wall -Wextra -Werror -Wno-unused-parameter
 
-KERNEL_OBJS = $(patsubst %.c,%.c.o,$(wildcard kernel/*.c))
+KERNEL_OBJS =  $(patsubst %.c,%.c.o,$(wildcard kernel/*.c))
 KERNEL_OBJS += $(patsubst %.c,%.c.o,$(wildcard kernel/*/*.c))
 KERNEL_OBJS += $(patsubst %.c,%.c.o,$(wildcard kernel/arch/$(ARCH)/*.c))
+
 KERNEL_OBJS += $(patsubst %.rs,%.rs.o,$(wildcard kernel/*.rs))
 KERNEL_OBJS += $(patsubst %.rs,%.rs.o,$(wildcard kernel/*/*.rs))
 KERNEL_OBJS += $(patsubst %.rs,%.rs.o,$(wildcard kernel/arch/$(ARCH)/*.rs))
+
 HEADERS = $(patsubst %.c,%.c.o,$(wildcard include/*.c))
 HEADERS += $(patsubst %.c,%.c.o,$(wildcard include/*/*.c))
 
