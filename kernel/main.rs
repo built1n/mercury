@@ -15,7 +15,7 @@ extern {
 
 #[no_mangle]
 #[no_split_stack]
-pub extern fn kernel_main() {
+pub extern "C" fn kernel_main() {
     unsafe {
         kernel_log(INFO, "kernel\0",
             "Hello, \

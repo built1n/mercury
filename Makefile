@@ -18,9 +18,9 @@ KERNEL_OBJS += $(patsubst %.rs,%.rs.o,$(wildcard kernel/arch/$(ARCH)/*.rs))
 HEADERS = $(patsubst %.c,%.c.o,$(wildcard include/*.c))
 HEADERS += $(patsubst %.c,%.c.o,$(wildcard include/*/*.c))
 
-.PHONY: all qemu
+.PHONY: all qemu run
 
-include kernel/arch/$(ARCH)/Makefile_arch
+include kernel/arch/$(ARCH)/Makefile
 
 kernel/%.c.o: kernel/%.c $(HEADERS)
 	$(CC) $(CFLAGS) -I$(INCLUDE) -o $@ $<
@@ -34,3 +34,5 @@ clean:
 
 qemu: mercury-kernel
 	qemu-system-i386 -sdl -kernel mercury-kernel -append "-system qemu"
+
+run: qemu
