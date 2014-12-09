@@ -1,0 +1,152 @@
+                             File Spaces in Mercury
+
+If Plan 9 took the idea of "everything is a file" to an extreme, then Mercury
+takes the idea of a virtual filesystem to an extreme. On any given Mercury
+system, there are several virtual filesystems hanging out at any given time.
+These are mostly a reflection of the global file space", which is itself a
+virtual filesystem (albiet a more traditional one like Unix might use).
+
+There are generally three file spaces in operation at any given time, each
+identified by a prefix:
+
+- Global file space (prefix: //)
+- Local file space (prefix: /)
+- User file space (prefix: ~)
+
+An ignorant user only knows about the user file space. A power user knows about
+the user and global file spaces. A programmer knows about all three.
+
+                               Global File Space
+
+The global space is a more traditional VFS, and the other file spaces are
+usually windows into the global space. It might look something like this:
+
+    //
+    ├── local
+    │   ├── sda
+    │   │   └── sda1
+    │   │       └── users
+    │   │           ├── bob
+    │   │           └── jim
+    │   └── sdb
+    │       └── software
+    │           └── vim
+    ├── remote
+    │   └── www.example.com
+    │       ├── software
+    │       │   └── emacs
+    │       └── users
+    │           └── ken
+    └── root
+        ├── software
+        │   ├── emacs
+        │   └── vim
+        └── users
+            ├── bob
+            ├── joe
+            └── ken
+
+There are three primary directories under "//". The first is "//local", which
+contains the mountpoints for local filesystems. We also have "//remote", which
+has remote filesystems mounted. Most importantly, we hvae "//root", which is a
+union mount of the standard directories on all of the other filesystems.
+
+This model allows you to distribute your logical directories to different disks
+or remote servers. A dumb terminal could have nothing in "//local" except
+perhaps a ramdisk. A personal laptop (that may be offline often) could keep most
+of its files in "//local" and only have "//remote" for when it's logged in at
+work.
+
+There are a couple of minor points that aren't clearly outlined here:
+
+- When writing, union mounts are flexible enough to handle whatever scenario
+  you'd like with respect to redundancy, file distribution, etc
+- You can specify priority for union mounts. If two filesystems provide the same
+  file, you may want to have your local filesystem take precedence. You could
+  also have several filesystems providing the same files for the sake of
+  redundancy - if one remote filesystem is offline, then the next could take its
+  place.
+
+Note the absence of truly virtual filesystems, like procfs. These are not
+neccessary in the global space, as will be outlined later on. Generally, the
+global space describes only real filesystems.
+
+This describes the global space. It contains more information than you need to
+know in many scenarios, however, and as a result we look to additional file
+spaces to meet additional needs.
+
+                                User File Space
+
+During the course of a user's average workday, they don't need to care about
+//local/sda, or the fact that there are other users on the system, and so on. As
+such, when the user logs into the system, a special VFS is spun up just for
+them, called the "user file space". The user can configure how this looks, but
+we could give an example:
+
+    ~
+    ├── software
+    ├── code
+    ├── config
+    ├── documents
+    └── music
+
+This is similar to what you might find in your home directory on a Unix system.
+Since you don't usually do operations on your disks, you don't see your disks.
+This is just your stuff. There are some special things about this, though.
+
+[aside: on Mercury, you can "mount" any directory on any filesystem to another
+directory. You don't just have to mount entire filesystems. This also extends to
+union mounts. All mounts are just union mounts, actually, but some of them
+happen to only have one filesystem backing them.]
+
+The "software" directory is a union mount of all of the software directories in
+the global file space. This is inspired from Plan 9, which removes $PATH in
+favor of a union mounted "/bin". More on how this works in the context of
+Mercury in a later document.
+
+                                Local File Space
+
+The local file space is similar to a chroot jail. Programs run inside of these,
+and aren't allowed out unless the user says it's okay (or if the system admin
+says it's okay, in the case of the global file space). This isn't all about
+restricting the programmer, though. Let's look at how this may actually end up
+in practice.
+
+    /
+    ├── bin
+    │   └── example
+    ├── config
+    │   └── example -> ~config/example
+    └── lib
+        └── readline -> //root/software/readline/1.0.0/lib/readline
+
+The local file space is as much about security as it is about getting things out
+of your way. You don't need to know about any software other than your own, so
+why would it show up in your bin directory? Only the things you need are here,
+and you don't have to worry about breaking the system since the only thing
+you'll trash is yourself.
+
+This file space also makes heavy use of "links". On Mercury, all links are
+symbolic links, and usually to the global file space. Note that one of this
+software's dependencies is readline, which is available in "/lib/readline". The
+use of a local file space makes it very easy to have several versions of one
+piece of software installed - everything that depends on it simply links to the
+version that they want to use in /lib.
+
+Also notice that your program's configuration is linked to the user file space.
+Software that operates on the system as a whole might have two configs. One for
+the global configuration and another for user-specific overrides:
+
+    /
+    └── config
+        ├── global -> //root/config/example
+        └── user -> ~config/example
+
+In this case, the user has given you a place to access their files. If you're a
+music player, then ~mounts/example/ might have ~music mounted on it. It's up to
+the user.
+
+By default, the only filesystem that your program can access is /. If the user
+thinks it's okay, you can access ~. If the sysadmin thinks it's okay, you can
+access //. This could be a permenant setting (i.e. setcap on Linux) or a
+one-time thing (i.e. sudo on Linux).
