@@ -3,7 +3,7 @@
 If Plan 9 took the idea of "everything is a file" to an extreme, then Mercury
 takes the idea of a virtual filesystem to an extreme. On any given Mercury
 system, there are several virtual filesystems hanging out at any given time.
-These are mostly a reflection of the global file space", which is itself a
+These are mostly a reflection of the "global file space", which is itself a
 virtual filesystem (albiet a more traditional one like Unix might use).
 
 There are generally three file spaces in operation at any given time, each
@@ -12,6 +12,9 @@ identified by a prefix:
 - Global file space (prefix: //)
 - Local file space (prefix: /)
 - User file space (prefix: ~)
+
+The actual VFS behind these prefixes changes depending on context. For example,
+~ refers to a different VFS for each logged-in user.
 
 An ignorant user only knows about the user file space. A power user knows about
 the user and global file spaces. A programmer knows about all three.
@@ -48,7 +51,7 @@ usually windows into the global space. It might look something like this:
 
 There are three primary directories under "//". The first is "//local", which
 contains the mountpoints for local filesystems. We also have "//remote", which
-has remote filesystems mounted. Most importantly, we hvae "//root", which is a
+has remote filesystems mounted. Most importantly, we have "//root", which is a
 union mount of the standard directories on all of the other filesystems.
 
 This model allows you to distribute your logical directories to different disks
@@ -70,10 +73,6 @@ There are a couple of minor points that aren't clearly outlined here:
 Note the absence of truly virtual filesystems, like procfs. These are not
 neccessary in the global space, as will be outlined later on. Generally, the
 global space describes only real filesystems.
-
-This describes the global space. It contains more information than you need to
-know in many scenarios, however, and as a result we look to additional file
-spaces to meet additional needs.
 
                                 User File Space
 
@@ -103,6 +102,9 @@ The "software" directory is a union mount of all of the software directories in
 the global file space. This is inspired from Plan 9, which removes $PATH in
 favor of a union mounted "/bin". More on how this works in the context of
 Mercury in a later document.
+
+[aside: I mentioned earlier that we'd justify why // doesn't include things like
+procfs. The reason is that if you really want a procfs, mount one in ~.]
 
                                 Local File Space
 
@@ -142,11 +144,24 @@ the global configuration and another for user-specific overrides:
         ├── global -> //root/config/example
         └── user -> ~config/example
 
-In this case, the user has given you a place to access their files. If you're a
-music player, then ~mounts/example/ might have ~music mounted on it. It's up to
-the user.
-
 By default, the only filesystem that your program can access is /. If the user
 thinks it's okay, you can access ~. If the sysadmin thinks it's okay, you can
 access //. This could be a permenant setting (i.e. setcap on Linux) or a
 one-time thing (i.e. sudo on Linux).
+
+                     Implication for system-wide interfaces
+
+Some programs (like shells) need broad access to the global space to, for
+example, execute a command. These sorts of permissions are configured when you
+install the program. The local space for a shell might look like this:
+
+    /
+    └── software -> //root/software/
+
+This would probably be mounted read-only. Note that this introduces a...
+
+                                     Loops
+
+Loops are very common in this system. Unless you explicity request the alternate
+behavior, the Mercury kernel will detect loops and prevent you from following
+them.
