@@ -1,7 +1,6 @@
 #![no_std]
 #![allow(ctypes)]
 
-#[allow(dead_code)]
 enum LogLevel {
     DEBUG,
     INFO,
