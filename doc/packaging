@@ -1,0 +1,119 @@
+                           Packaging Mercury Software
+
+Packaging software and resolving dependencies on a Mercury system is
+delightfully simple and relies entirely on very easily understood concepts. For
+the most part, if you understand file spaces, you already know how packaging
+works.
+
+                             Contents of a Package
+
+A package file is a tarball with GNU extensions to allow symlinks. This package
+is extracted to the root file space whever you want to install it. This could be
+a local hard disk, or somewhere in your home, or a remote server - any number of
+places. All software packages, however, are extracted to their own directory.
+There is nothing like Unix's /bin, a flat directory full of binaries. When
+extracted, it may look something like this:
+
+    /
+    ├── bin
+    │   ├── example
+    │   └── foobar
+    ├── config
+    │   └── foobar -> ~config/foobar
+    ├── lib
+    │   └── readline -> //root/software/readline/1.0.0/lib/readline
+    └── package
+        ├── info
+        └── post-install
+
+The package contains the contents of its local file space, and this is the file
+space it will see when it runs. This is simply installed into a software
+directory as-is, with one exception: mounts. Take note of the links here - this
+is why the GNU extensions for the TAR format are used.
+
+The /package directory contains some meta information about the package itself.
+The "post-install" file is an executable - likely a script. The others are
+config files. The info file might look like this:
+
+    [software]
+    name=foobar
+    description=A program for foo-ing bars
+    dependencies=readline:1.0.0
+    [exec]
+    run=/bin/foobar
+    access=local,user
+    [mounts]
+    /proc=procfs
+
+This contains a number of useful things. "run" is the binary that should be run
+when you use this software by default. In a shell, you could do this:
+
+    $ foobar # Runs /bin/foobar, the run parameter in /package/info
+    $ foobar/example # runs /bin/example because explicitly requested
+
+To translate this into a real-world example, say you have ffmpeg installed. You
+could use its sub-programs like so:
+
+    $ ffmpeg # invoke ffmpeg proper
+    $ ffmpeg/ffprobe # invoke ffprobe
+
+Also here is the [mounts] category. When running, the package may want to have
+extra filesystems mounted here (such as a procfs). Mounts will make sure those
+are present. You could also mount the user file space, for example, if you asked
+for permission via "access".
+
+                             Dependency Resolution
+
+In the example package above, we have a dependency on readline 1.0.0. Other
+software might also depend on readline, but a different version. For this
+reason, we structure //root/software with versions. For example, the structure
+here could be:
+
+    //root/software/
+    ├── example
+    │   └── 1.0.0
+    └── readline
+        ├── 1.0.0
+        └── 1.1.0
+
+You'll notice that "example" had used a link to readline 1.0.0 in its lib
+directory. This allows us to easily install several versions of a package
+side-by-side and allow all software that depends on it to use whichever version
+works best.
+
+                                Remote Packages
+
+One of the advantages of a Mercury system is the strong focus on union mounting
+filesystems to add convenience. You may eventually want to install software from
+a package respository. On a Mercury system, however, you're free to try before
+you buy. On a typical system, //root/software/ is a union mount with your local
+copy of packages, and a remote package repository. Under these conditions, you
+essentially have all packages installed all the time. Only when you need to
+access them offline or want faster access to these packages do you need to
+install them - and then doing so is very simple:
+
+    cp -r //root/software/vim //local/sda1/software/
+
+An actual package manager comes in handy to also bring along dependencies
+(although it's not required - you have all the dependencies installed remotely,
+too!). However, this "package manager" could be a very simple script:
+
+    # psuedocode
+    package=$0
+    source=//root/software/$package/
+    dependencies=$(readconf $source/package/info software.dependencies)
+    
+    install() {
+        cp -r //root/software/$0 //local/sda1/software/
+    }
+    
+    for $dep in dependencies
+    do
+        install $dep
+    done
+    install $package
+
+Additionally, listing installed packages is as simple as `ls //root/software/`.
+
+An actual package manager is useful for user convenience - these examples just
+demonstrate the simplicitly inherit to this system.
