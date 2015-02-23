@@ -2,4 +2,4 @@
 
 ---
 
-![](https://cdn.mediacru.sh/z8Jo5IPWNpEA.png)
+![](http://a.pomf.se/rehxxv.png)
