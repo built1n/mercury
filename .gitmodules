@@ -1,0 +1,3 @@
+[submodule "kernel/arch/z80/libc"]
+	path = kernel/arch/z80/libc
+	url = git://github.com/KnightOS/libc.git

@@ -5,7 +5,7 @@ struct arch_terminal {
     void (* print_character)(char);
 };
 
-void set_kernel_terminal(struct arch_terminal terminal);
+void set_kernel_terminal(struct arch_terminal *terminal);
 void kernel_print_character(char c);
 
 #endif

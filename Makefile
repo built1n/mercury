@@ -1,6 +1,8 @@
+ARCH:=i686
+
 BINDIR:=./bin/
 INCLUDE:=./include/
-ARCH:=i686
+INTERM_FORMAT:=c
 
 KERNEL_OBJS = $(patsubst %.c,%.o,$(wildcard kernel/*.c))
 KERNEL_OBJS += $(patsubst %.c,%.o,$(wildcard kernel/*/*.c))
@@ -12,9 +14,12 @@ HEADERS += $(patsubst %.c,%.h,$(wildcard include/*/*.c))
 
 include kernel/arch/$(ARCH)/Makefile
 
+all: mercury-kernel
+
 kernel/%.o: kernel/%.c $(HEADERS)
-	$(CC) $(CFLAGS) -I$(INCLUDE) -o $@ $<
+	$(CC) $(CFLAGS) -I$(INCLUDE) -I$(INCLUDE)arch/$(ARCH)/ -o $@ $<
 
 clean:
 	find . -name "*.o" -delete
+	find . -maxdepth 3 -name "*.asm" -delete
 	rm mercury-kernel

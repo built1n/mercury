@@ -9,15 +9,17 @@ void ansi_init(struct ansi_state *state) {
 }
 
 void handle_control_sequence(struct ansi_state *state) {
+	char *code;
+	int control;
 	if (state->index < 3) {
 		/* Non-CSI sequences are unsupported */
 		state->index = 0;
 		return;
 	}
-	char *code = state->buffer;
+	code = state->buffer;
 	code += 2;
 	while (*code) {
-		int control = atoi(code);
+		control = atoi(code);
 		switch (control) {
 			case 0:
 				if (state->hooks.reset != NULL) {

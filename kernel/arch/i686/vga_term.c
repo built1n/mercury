@@ -122,7 +122,7 @@ void initialize_vga_terminal() {
 	struct arch_terminal term = {
 		&print_character
 	};
-	set_kernel_terminal(term);
+	set_kernel_terminal(&term);
 	ansi_init(&ansi);
 	ansi.hooks.set_foreground_ansi = ansi_set_foreground_ansi;
 	ansi.hooks.set_background_ansi = ansi_set_background_ansi;
