@@ -32,7 +32,7 @@ void gdt_set_gate(size_t index, uint64_t base, uint64_t limit, uint8_t access, u
 }
 
 void load_gdt() {
-	gp.limit = ((sizeof(struct gdt_entry)) * sizeof(gdt)) - 1;
+	gp.limit = sizeof(gdt) - 1;
 	gp.base = (uint32_t)&gdt;
 
 	/* NULL gate */
